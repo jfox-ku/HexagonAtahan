@@ -12,5 +12,28 @@ public class HexagonScript : MonoBehaviour
         HexSpriteRenderer.color = ColorSO.Clr;
     }
 
+    public void FadeIn() {
+        StartCoroutine(FadeInAnim());
+    }
+
+    public IEnumerator FadeInAnim() {
+
+        float fadeTime = 1f;
+        float fadeTimer = fadeTime;
+
+        Color baseColor = ColorSO.Clr;
+
+        while (fadeTimer > 0) {
+            baseColor.a = (fadeTime - fadeTimer) / fadeTime;
+
+            fadeTimer -= Time.deltaTime;
+            HexSpriteRenderer.color = baseColor;
+            yield return null;
+        }
+
+        HexSpriteRenderer.color = ColorSO.Clr;
+
+    }
+
 
 }

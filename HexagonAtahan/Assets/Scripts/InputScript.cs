@@ -4,13 +4,13 @@ using UnityEngine;
 
 public class InputScript : MonoBehaviour
 {
-    
+    public bool LockInput = false;
 
     // Update is called once per frame
     void FixedUpdate()
     {
 
-        if (Input.GetMouseButtonDown(0)) {
+        if (Input.GetMouseButton(0) && !LockInput) {
            
 
             Vector3 TouchWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -24,7 +24,17 @@ public class InputScript : MonoBehaviour
             if (Physics.Raycast(Camera.main.transform.position, Direction, out RaycastHit hit,15f)) {
                 var hex = hit.transform.GetComponent<HexTile>();
                 if (hex) {
-                    hex.DebugHelp();
+                    LockInput = true;
+                    hex.HexClicked();
+                    //hex.DebugHelp();
+                    //var MatchingNeigbours = hex.GetNeighboursData().GetMatchingNeighbours();
+                    //foreach (HexTile tile in MatchingNeigbours) {
+                    //    tile.HexMatched();
+                    //}
+                    //if(MatchingNeigbours.Count!=0)
+                    //hex.HexMatched();
+
+                    FindObjectOfType<HexMap>().StartFallCheck();
                 }
 
                 
@@ -35,6 +45,10 @@ public class InputScript : MonoBehaviour
 
         }
         
+    }
+
+    public void LockClear() {
+        LockInput = false;
     }
 
 
