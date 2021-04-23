@@ -10,6 +10,7 @@ public class HexMap : MonoBehaviour {
 
     [Header("SO Events")]
     public VoidEvent ReadyForNextInputEvent;
+    public VoidEvent LockInputEvent;
 
     [Header("Dimensions")]
     public int count_w;
@@ -21,11 +22,23 @@ public class HexMap : MonoBehaviour {
     private HexTile[,] HexTileBases;
     private float xOffset = 0.77f;
     private float yOffset = 0.9f;
+    private const int MAX_SEARCH_DEPTH = 10;
+    private const int MAX_TRY_STABLE = 20;
+    private RotatorScript RotatorInstance;
+    public static bool isInitialized;
 
     private bool CheckingForFall = false;
 
+    public void SetRotator(List<HexTile> tiles) {
+        if(RotatorInstance==null) RotatorInstance = Instantiate(RotatorPrefab).GetComponent<RotatorScript>();
+        RotatorInstance.SetRotator(tiles);
+
+    }
+
     void Start() {
+        isInitialized = false;
         InitializeMap(count_w, count_h);
+        RotatorInstance = Instantiate(RotatorPrefab).GetComponent<RotatorScript>();
     }
 
     public void InitializeMap(int w, int h) {
@@ -52,6 +65,32 @@ public class HexMap : MonoBehaviour {
             }
 
         }
+
+        StartCoroutine(MatchDropUntilStable());
+
+
+    }
+
+    private IEnumerator MatchDropUntilStable() {
+        if (!CheckingForFall) {
+            CheckingForFall = true;
+            LockInputEvent.Raise(new Void());
+            int count = 0;
+            while (count < MAX_TRY_STABLE) {
+                CheckForMatches();
+                count++;
+                StartCoroutine(ColumnFallCheck());
+                if (CheckForMatches() == 0) break;
+                yield return new WaitForSeconds(0.5f);
+
+            }
+
+            CheckingForFall = false;
+            yield return new WaitForSeconds(1f);
+            if (!isInitialized) isInitialized = true;
+            ReadyForNextInputEvent.Raise(new Void());
+        }
+        
     }
 
 
@@ -60,11 +99,7 @@ public class HexMap : MonoBehaviour {
         hex.SetColor(ColorAssets[Random.Range(0, ColorAssets.Count)]);
     }
 
-
-    public void StartFallCheck() {
-        if(!CheckingForFall)
-        StartCoroutine(ColumnFallCheck());
-    }
+  
 
     public HexagonScript SpawnHexagonAt(int i, int j) {
         var tile = HexTileBases[i, j];
@@ -74,6 +109,10 @@ public class HexMap : MonoBehaviour {
 
         tile.CurrentHexagon = hex;
         return hex;
+
+    }
+
+    public void SetNextHexagonAsBomb() {
 
     }
 
@@ -89,7 +128,9 @@ public class HexMap : MonoBehaviour {
         for (int i = 0; i < count_w; i++) {
             for (int j = 0; j < count_h; j++) {
                 HexTile tile = HexTileBases[i, j];
+                //Find Bottom empty tile
                 if (tile.isEmpty()) {
+                    //Find first non-empty tile above 
                     for (int k = j + 1; k < count_h; k++) {
                         HexTile UpperTile = HexTileBases[i, k];
                         if (!UpperTile.isEmpty()) {
@@ -98,9 +139,6 @@ public class HexMap : MonoBehaviour {
                             break;
                         }
                         //UpperTile.DebugHelp();
-
-
-
                     }
                 }
 
@@ -108,8 +146,8 @@ public class HexMap : MonoBehaviour {
                 if (tile.isEmpty()) {
                     var TopHexTile = HexTileBases[i, count_h - 1];
                     var newHex = SpawnHexagonAt(i, count_h - 1);
-                    
-                    //Drop if not the top tile
+
+                    //Drop if not the top tile itself was empty
                     if (TopHexTile != tile) {
                         HexTileBases[i, count_h - 1].HexDrop(tile);
                     }
@@ -130,7 +168,44 @@ public class HexMap : MonoBehaviour {
         ReadyForNextInputEvent.Raise(new Void());
     }
 
+    public int CheckForMatches() {
+        int matchCount = 0;
+        for (int i = 0; i < count_w; i++) {
+            for (int j = 0; j < count_h; j++) {
+                var tile = HexTileBases[i, j];
+                if (!tile.isChecked) {
+                    tile.isChecked = true;
+                    var matches = tile.AllMatch(MAX_SEARCH_DEPTH,tile.CurrentHexColor());
+                    
+                    foreach (var t in matches) {
+                        
+                        t.HexMatched();
+                        matchCount++;
+                        t.isChecked = true;
+                    }
 
+
+                }
+
+
+            }
+        }
+
+        for (int i = 0; i < count_w; i++) {
+            for (int j = 0; j < count_h; j++) {
+                var tile = HexTileBases[i, j];
+                tile.isChecked = false;
+
+            }
+        }
+
+        if (matchCount != 0) {
+            StartCoroutine(MatchDropUntilStable());
+            Debug.Log(matchCount);
+
+        }
+        return matchCount;
+    }
 
 
 }

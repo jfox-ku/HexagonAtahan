@@ -5,13 +5,22 @@ using UnityEngine;
 public class InputScript : MonoBehaviour
 {
     public bool LockInput = false;
+    private bool InternalLock = false;
+
+    public VoidEvent DragToStartRotateEvent;
 
     // Update is called once per frame
     void FixedUpdate()
     {
+        if (Input.GetMouseButton(1) && !InternalLock) {
 
-        if (Input.GetMouseButton(0) && !LockInput) {
-           
+            DragToStartRotateEvent.Raise(new Void());
+            return;
+        }
+
+        if (Input.GetMouseButton(0) && !(LockInput || InternalLock)) {
+
+            
 
             Vector3 TouchWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             TouchWorldPos.z = 0;
@@ -24,8 +33,9 @@ public class InputScript : MonoBehaviour
             if (Physics.Raycast(Camera.main.transform.position, Direction, out RaycastHit hit,15f)) {
                 var hex = hit.transform.GetComponent<HexTile>();
                 if (hex) {
-                    LockInput = true;
+                    
                     hex.HexClicked();
+                    StartCoroutine(InternalInputWait());
                     //hex.DebugHelp();
                     //var MatchingNeigbours = hex.GetNeighboursData().GetMatchingNeighbours();
                     //foreach (HexTile tile in MatchingNeigbours) {
@@ -33,8 +43,7 @@ public class InputScript : MonoBehaviour
                     //}
                     //if(MatchingNeigbours.Count!=0)
                     //hex.HexMatched();
-
-                    FindObjectOfType<HexMap>().StartFallCheck();
+                    
                 }
 
                 
@@ -47,8 +56,22 @@ public class InputScript : MonoBehaviour
         
     }
 
+    private IEnumerator InternalInputWait() {
+        InternalLock = true;
+        yield return new WaitForSeconds(0.5f);
+        InternalLock = false;
+
+    }
+
     public void LockClear() {
         LockInput = false;
+    }
+
+    public void LockLock() {
+        //Who's there?
+        LockInput = true;
+        // ._.
+
     }
 
 

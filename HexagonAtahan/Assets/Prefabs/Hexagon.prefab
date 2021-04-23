@@ -96,3 +96,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   HexSpriteRenderer: {fileID: 9040993907134658838}
+  HexagonDestroyedEvent: {fileID: 11400000, guid: 6b0e50bde5907994781188fb010b4e5c, type: 2}

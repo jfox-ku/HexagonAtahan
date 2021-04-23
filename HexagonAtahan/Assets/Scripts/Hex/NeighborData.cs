@@ -28,6 +28,7 @@ public class NeighborData
     }
 
 
+
     public List<HexTile> FindViableCorner(int offset=0) {
         List<HexTile> Viables = new List<HexTile>();
         var directions = (HexDirection[])Enum.GetValues(typeof(HexDirection));
@@ -59,6 +60,7 @@ public class NeighborData
 
         Viables.Add(MyCenter);
 
+        //Recursive call with lower offset in case the offset prevents finding the pair.
         if(Viables.Count != 3 && offset > 0) {
             Viables = FindViableCorner(offset - 1);
         }
@@ -66,26 +68,40 @@ public class NeighborData
         return Viables;
     }
 
+    public HashSet<HexTile> JointMatches(ColorInfoSO CSO) {
+        HashSet<HexTile> ret = new HashSet<HexTile>();
+        if (MyCenter.CurrentHexColor() != CSO) return ret;
+
+        for (int i = 0; i < 6; i++) {
+            var tile1 = NeighboursDict[(HexDirection)i];
+            var tile2 = NeighboursDict[(HexDirection)(i+1 > 5 ? 0:i+1)];
+            if (tile1 == null || tile2 == null || tile1.isEmpty() || tile2.isEmpty()) continue;
+            if (tile1.CurrentHexColor()!= CenterColor || tile2.CurrentHexColor() != CenterColor) continue;
+
+            if (tile1.CurrentHexColor() == tile2.CurrentHexColor()) {
+                ret.Add(tile1);
+                ret.Add(tile2);
+            }
+        }
+
+        if (ret.Count != 0) {
+            ret.Add(MyCenter);
+        }
+        return ret;
+    }
 
 
 
     public List<HexTile> GetMatchingNeighbours() {
         List<HexTile> Ret = new List<HexTile>();
-
         foreach (KeyValuePair<HexDirection,HexTile> entry in NeighboursDict) {
             if (entry.Value != null) {
-
                 if(entry.Value.CurrentHexColor() == CenterColor) {
                     Ret.Add(entry.Value);
-
-
                 }
-
             }
         }
-
         return Ret;
-
     }
 
 

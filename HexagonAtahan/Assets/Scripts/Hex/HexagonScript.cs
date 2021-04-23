@@ -5,6 +5,7 @@ using UnityEngine;
 public class HexagonScript : MonoBehaviour
 {
     [SerializeField] private SpriteRenderer HexSpriteRenderer;
+    public VoidEvent HexagonDestroyedEvent;
 
     public ColorInfoSO ColorSO { get; private set; }
     public void SetColor(ColorInfoSO info) {
@@ -33,6 +34,25 @@ public class HexagonScript : MonoBehaviour
 
         HexSpriteRenderer.color = ColorSO.Clr;
 
+    }
+
+
+    public void FlashAndDestroy() {
+        StartCoroutine(FlashDestroy());
+    }
+
+    private IEnumerator FlashDestroy() {
+        Color flashColor = Color.white;
+        flashColor.a = 0.5f;
+        HexSpriteRenderer.color = flashColor;
+        yield return new WaitForSeconds(0.2f);
+        Destroy(this.gameObject);
+
+
+    }
+
+    private void OnDestroy() {
+        HexagonDestroyedEvent.Raise(new Void());
     }
 
 
