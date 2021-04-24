@@ -31,8 +31,12 @@ public class RotatorScript : MonoBehaviour
         //this.transform.rotation = Quaternion.LookRotation(hexes[0].transform.position-transform.position);
     }
 
-    public void Rotate() {
+    private bool ClockWise = true;
+    public void Rotate(int dir) {
         if (!isRotating) {
+
+            if (dir < 0) ClockWise = false;
+            else ClockWise = true;
 
             //ParentToMe();
             StartCoroutine(RotateAnim());
@@ -54,6 +58,7 @@ public class RotatorScript : MonoBehaviour
     //    }
     //}
 
+
     private void RotateHexagonsInTiles() {
         List<HexagonScript> hexagonList = new List<HexagonScript>() {
             {hexes[0].EjectHexagon()},
@@ -61,9 +66,16 @@ public class RotatorScript : MonoBehaviour
             {hexes[2].EjectHexagon()}
         };
 
-        hexes[0].PullHexagonToTile(hexagonList[1]);
-        hexes[1].PullHexagonToTile(hexagonList[2]);
-        hexes[2].PullHexagonToTile(hexagonList[0]);
+        if (ClockWise) {
+            hexes[0].PullHexagonToTile(hexagonList[1]);
+            hexes[1].PullHexagonToTile(hexagonList[2]);
+            hexes[2].PullHexagonToTile(hexagonList[0]);
+        } else {
+            hexes[0].PullHexagonToTile(hexagonList[2]);
+            hexes[1].PullHexagonToTile(hexagonList[0]);
+            hexes[2].PullHexagonToTile(hexagonList[1]);
+        }
+        
 
         RotationCount++;
     }
@@ -79,12 +91,14 @@ public class RotatorScript : MonoBehaviour
             RotateHexagonsInTiles();
             
             yield return new WaitForSeconds(0.4f);
-            if (HexTile.Map.CheckForMatches() == 0) {
+            var matchSet = HexTile.Map.CheckForMatches();
+            if (matchSet.Count == 0) {
                 //If no matches, turn again
                 StartCoroutine(RotateAnim());
             } else {
-                //if match, just reset
-                yield return new WaitForSeconds(0.4f);
+                //if match, just reset and ask the map to go stable
+                yield return new WaitForSeconds(0.15f);
+                HexTile.Map.LockUntilStable();
                 RotationCount = 0;
                 isRotating = false;
                 
@@ -103,23 +117,3 @@ public class RotatorScript : MonoBehaviour
 
 }
 
-
-//Vector3 relativePos = hexes[RotationCount%3].transform.position - transform.position;
-
-//Quaternion BaseRot = this.transform.rotation;
-//Quaternion TargetRot = Quaternion.LookRotation(relativePos,Vector3.right);
-//TargetRot.y = BaseRot.y;
-//TargetRot.z = BaseRot.z;
-
-
-//float RotateTime = 0.5f;
-//float RotateTimer = RotateTime;
-
-//while (RotateTimer>0) {
-//    RotateTimer -= Time.deltaTime;
-//    Quaternion temp_rot = Quaternion.Lerp(BaseRot,TargetRot,(RotateTime-RotateTimer)/RotateTime);
-//    transform.rotation = temp_rot;
-//    yield return null;
-
-//}
-//this.transform.rotation = TargetRot;

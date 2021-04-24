@@ -43,9 +43,9 @@ public class HexagonScript : MonoBehaviour
 
     private IEnumerator FlashDestroy() {
         Color flashColor = Color.white;
-        flashColor.a = 0.5f;
+        flashColor.a = 0.9f;
         HexSpriteRenderer.color = flashColor;
-        yield return new WaitForSeconds(0.2f);
+        yield return new WaitForSeconds(0.25f);
         Destroy(this.gameObject);
 
 

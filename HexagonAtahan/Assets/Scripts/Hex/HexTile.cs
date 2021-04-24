@@ -10,7 +10,7 @@ public class HexTile : MonoBehaviour
 
     public bool isOdd;
     public bool isChecked;
-    private bool isMatchFlag = false;
+    public bool isMatchFlag = false;
 
     public HexagonScript CurrentHexagon;
     public static HexMap Map;
@@ -50,22 +50,6 @@ public class HexTile : MonoBehaviour
 
         var Data = GetNeighboursData();
         Map.SetRotator(Data.FindViableCorner(ClickCount%6));
-       
-        //var Data = GetNeighboursData();
-        //var JM = Data.JointMatches();
-        //foreach (var item in JM) {
-        //    item.HexMatched();
-        //}
-
-        //var list = Data.FindViableCorner(ClickCount%6);
-
-        ////Debug.Log(list.Count);
-        //if (list.Count == 3) {
-        //    foreach (var item in list) {
-        //        item.HexMatched();
-        //    }
-
-        //}
 
     }
 
@@ -91,11 +75,7 @@ public class HexTile : MonoBehaviour
 
     }
 
-    public static int AllMatchCallCount = 0;
-
-
     public HashSet<HexTile> AllMatch(int depth,ColorInfoSO ColorTarget = null) {
-        AllMatchCallCount++;
         HashSet<HexTile> allMatches = new HashSet<HexTile>();
         if (ColorTarget == null) ColorTarget = CurrentHexColor();
 

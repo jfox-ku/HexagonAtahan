@@ -9,7 +9,7 @@ public abstract class BaseGameEvent<T> : ScriptableObject
     public void Raise(T item) {
 
         for (int i = eventListeners.Count - 1; i >= 0; i--) {
-            eventListeners[i].OnEventRaised(item);
+            eventListeners[i]?.OnEventRaised(item);
         }
 
     }

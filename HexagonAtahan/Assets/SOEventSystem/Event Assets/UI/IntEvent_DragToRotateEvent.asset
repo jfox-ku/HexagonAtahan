@@ -9,6 +9,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 757d3e2adeb181248a0dece0b5224945, type: 3}
-  m_Name: RotatorStartRotateEvent
+  m_Script: {fileID: 11500000, guid: 4fcc9a3c26bcefe4c8fd94a7226f870c, type: 3}
+  m_Name: IntEvent_DragToRotateEvent
   m_EditorClassIdentifier: 

@@ -92,7 +92,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1776139479326593371}
   - component: {fileID: 5904346051821871367}
-  - component: {fileID: 265142722422555780}
+  - component: {fileID: 438498369705367675}
   m_Layer: 0
   m_Name: Rotator
   m_TagString: Untagged
@@ -131,7 +131,8 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
---- !u!114 &265142722422555780
+  isRotating: 0
+--- !u!114 &438498369705367675
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -140,17 +141,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 6399029142586915086}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 557f59ea4dd2b2746b62851871b701cf, type: 3}
+  m_Script: {fileID: 11500000, guid: 9efd12e5b8741b54e813f39ef22e36b1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gameEvent: {fileID: 11400000, guid: 65923b911c668154c9391511419bec69, type: 2}
+  gameEvent: {fileID: 11400000, guid: e3e93f8e183aa4d479c2639f07362497, type: 2}
   unityEventResponse:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 5904346051821871367}
         m_TargetAssemblyTypeName: RotatorScript, Assembly-CSharp
         m_MethodName: Rotate
-        m_Mode: 1
+        m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine

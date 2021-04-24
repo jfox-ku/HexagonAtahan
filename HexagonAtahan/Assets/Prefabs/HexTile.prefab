@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3214126912253972133}
   - component: {fileID: 2232924322206896996}
-  - component: {fileID: 9206353135099701747}
+  - component: {fileID: 1564543343005445871}
   m_Layer: 0
   m_Name: HexTile
   m_TagString: Untagged
@@ -48,9 +48,11 @@ MonoBehaviour:
   row: 0
   column: 0
   isOdd: 0
+  isChecked: 0
+  isMatchFlag: 0
   CurrentHexagon: {fileID: 851538756304757922}
---- !u!65 &9206353135099701747
-BoxCollider:
+--- !u!135 &1564543343005445871
+SphereCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -60,8 +62,8 @@ BoxCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 0.6913018, y: 0.6515051, z: 0.07656326}
-  m_Center: {x: 0.01284866, y: -0.004442632, z: -0.0003320612}
+  m_Radius: 0.43619132
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1001 &4212316246287844036
 PrefabInstance:
   m_ObjectHideFlags: 0
