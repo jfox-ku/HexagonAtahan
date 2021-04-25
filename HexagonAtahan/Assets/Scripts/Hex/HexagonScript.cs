@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class HexagonScript : MonoBehaviour
-{
+public class HexagonScript : MonoBehaviour {
     [SerializeField] private SpriteRenderer HexSpriteRenderer;
     public VoidEvent HexagonDestroyedEvent;
 

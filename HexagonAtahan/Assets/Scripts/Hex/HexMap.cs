@@ -10,16 +10,17 @@ public class HexMap : MonoBehaviour {
     public GameObject RotatorPrefab;
     public GameObject BombPrefab;
 
-    [Header("SO Events")]
+    [Header("SO Events to call")]
     public VoidEvent ReadyForNextInputEvent;
     public VoidEvent LockInputEvent;
     public VoidEvent ValidTurnCompleteEvent;
+    public VoidEvent GameOverEvent;
 
     [Header("Dimensions")]
     public int count_w;
     public int count_h;
 
-    [Header("Colors")]
+    [Header("Color Assets (ColorInfoSO)")]
     public List<ColorInfoSO> ColorAssets = new List<ColorInfoSO>();
 
     private HexTile[,] HexTileBases;
@@ -28,16 +29,16 @@ public class HexMap : MonoBehaviour {
     private const int MAX_SEARCH_DEPTH = 10;
     private const int MAX_TRY_STABLE = 20;
     private RotatorScript RotatorInstance;
+    private bool spawnBomb = false;
     public static bool isInitialized;
 
     private bool CheckingForFall = false;
-
-    
 
     void Start() {
         isInitialized = false;
         InitializeMap(count_w, count_h);
         RotatorInstance = Instantiate(RotatorPrefab).GetComponent<RotatorScript>();
+        RotatorInstance.SetRotator(new List<HexTile> { HexTileBases[0, 0], HexTileBases[1, 0], HexTileBases[1, 1] });
     }
 
 
@@ -76,10 +77,13 @@ public class HexMap : MonoBehaviour {
 
     }
 
+
+
     public void LockUntilStable() {
         StartCoroutine(MatchDropUntilStable());
     }
 
+    //Locks input and calls ColumnFallCheck until stable or no moves are left
     private IEnumerator MatchDropUntilStable() {
 
 
@@ -92,7 +96,7 @@ public class HexMap : MonoBehaviour {
                 var hexSet = CheckForMatches();
                 yield return new WaitForSeconds(0.5f);
                 if (hexSet.Count != 0) {
-                    
+
                     DestroyMatchedHexes(hexSet);
                     yield return new WaitForSeconds(0.5f);
                     StartCoroutine(ColumnFallCheck());
@@ -108,53 +112,26 @@ public class HexMap : MonoBehaviour {
             CheckingForFall = false;
             yield return new WaitForSeconds(0.4f);
             if (!isInitialized) isInitialized = true;
-            ValidTurnCompleteEvent.Raise(new Void());
-            ReadyForNextInputEvent.Raise(new Void());
+
+
+            if (AnyMovesPossible()) {
+                Debug.Log("Moves are possible.");
+                ValidTurnCompleteEvent.Raise(new Void());
+                ReadyForNextInputEvent.Raise(new Void());
+
+            } else {
+                Debug.Log("No possible moves left.");
+                GameOverEvent.Raise(new Void());
+            }
+
+
         }
-        
-    }
-
-    public void DestroyMatchedHexes(HashSet<HexTile> hexSet) {
-        foreach (var hex in hexSet) {
-
-            hex.HexMatched();
-
-        }
-    }
-
-
-    public void ApplyRandomColor(HexagonScript hex) {
-        if (!hex) return;
-        hex.SetColor(ColorAssets[Random.Range(0, ColorAssets.Count)]);
-    }
-
-    public HexagonScript SpawnHexagonAt(int i, int j) {
-        var tile = HexTileBases[i, j];
-
-        var PrefabToSpawn = spawnBomb ? BombPrefab : HexagonPrefab;
-        if (spawnBomb) spawnBomb = false;
-
-        var hex = Instantiate(PrefabToSpawn, tile.transform).GetComponent<HexagonScript>();
-        ApplyRandomColor(hex);
-        hex.FadeIn();
-
-        tile.CurrentHexagon = hex;
-        return hex;
 
     }
 
-    private bool spawnBomb = false;
-    public void SetNextHexagonAsBomb() {
-        spawnBomb = true;
-    }
 
-    public HexTile GetTileBase(int rw, int cl) {
-        if (rw >= count_w || rw < 0) return null;
-        if (cl >= count_h || cl < 0) return null;
-
-        return HexTileBases[rw, cl];
-    }
-
+    //Drops Hexagons in their columns
+    //Spawns new Hexagons when needed
     private IEnumerator ColumnFallCheck() {
         CheckingForFall = true;
         for (int i = 0; i < count_w; i++) {
@@ -194,6 +171,32 @@ public class HexMap : MonoBehaviour {
         yield return null;
     }
 
+
+    //Calls HexMatched on the list
+    public void DestroyMatchedHexes(HashSet<HexTile> hexSet) {
+        foreach (var hex in hexSet) {
+
+            hex.HexMatched();
+
+        }
+    }
+
+    //Applies color to Hexagons from a ColorInfoSo
+    public void ApplyRandomColor(HexagonScript hex) {
+        if (!hex) return;
+        hex.SetColor(ColorAssets[Random.Range(0, ColorAssets.Count)]);
+    }
+
+
+    //Safely gets HexTile, return null if tile doesnt exist
+    public HexTile GetTileBase(int rw, int cl) {
+        if (rw >= count_w || rw < 0) return null;
+        if (cl >= count_h || cl < 0) return null;
+
+        return HexTileBases[rw, cl];
+    }
+
+    //Returns all matches
     public HashSet<HexTile> CheckForMatches() {
         HashSet<HexTile> matchList = new HashSet<HexTile>();
         int matchCount = 0;
@@ -202,19 +205,15 @@ public class HexMap : MonoBehaviour {
                 var tile = HexTileBases[i, j];
                 if (!tile.isChecked) {
                     tile.isChecked = true;
-                    var matches = tile.AllMatch(MAX_SEARCH_DEPTH,tile.CurrentHexColor());
-                    
+                    var matches = tile.GetAllMatches(MAX_SEARCH_DEPTH, tile.CurrentHexColor());
+
                     foreach (var t in matches) {
                         matchList.Add(t);
                         //t.HexMatched();
                         matchCount++;
                         t.isChecked = true;
                     }
-
-
                 }
-
-
             }
         }
 
@@ -225,20 +224,42 @@ public class HexMap : MonoBehaviour {
 
             }
         }
-
-        //if (matchCount != 0) {
-        //    StartCoroutine(MatchDropUntilStable());
-        //    Debug.Log(matchCount);
-
-        //}
-
         return matchList; ;
+    }
+
+    public bool AnyMovesPossible() {
+        for (int i = 0; i < count_w; i++) {
+            for (int j = 0; j < count_h; j++) {
+                var tile = HexTileBases[i, j];
+                if (tile.HasPossibleMatch()) return true;
+            }
+        }
+        return false;
     }
 
     public void SetRotator(List<HexTile> tiles) {
         if (RotatorInstance == null) RotatorInstance = Instantiate(RotatorPrefab).GetComponent<RotatorScript>();
         RotatorInstance.SetRotator(tiles);
 
+    }
+
+    public HexagonScript SpawnHexagonAt(int i, int j) {
+        var tile = HexTileBases[i, j];
+
+        var PrefabToSpawn = spawnBomb ? BombPrefab : HexagonPrefab;
+        if (spawnBomb) spawnBomb = false;
+
+        var hex = Instantiate(PrefabToSpawn, tile.transform).GetComponent<HexagonScript>();
+        ApplyRandomColor(hex);
+        hex.FadeIn();
+
+        tile.CurrentHexagon = hex;
+        return hex;
+
+    }
+
+    public void SetNextHexagonAsBomb() {
+        spawnBomb = true;
     }
 
 }

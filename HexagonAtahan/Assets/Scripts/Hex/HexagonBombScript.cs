@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
-public class HexagonBombScript : HexagonScript
-{
+public class HexagonBombScript : HexagonScript {
     public TextMeshProUGUI bombCounterText;
     public VoidEvent BombExplodeEvent;
 
@@ -16,6 +15,7 @@ public class HexagonBombScript : HexagonScript
         bombCounterText.text = "" + currentCounter;
     }
 
+    //Called by the VoidListener on the Prefab 
     public void CountdownBomb() {
         currentCounter--;
         if (currentCounter <= 0) {
@@ -28,7 +28,7 @@ public class HexagonBombScript : HexagonScript
     }
 
 
-    
+
 
 
 }

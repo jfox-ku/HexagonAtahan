@@ -17,15 +17,15 @@ public class InputScript : MonoBehaviour {
         if (LockInput) { return; }
         if (Input.touchCount != 0) {
             Touch touch = Input.touches[0];
-            
+
             if (TouchPhase.Ended == touch.phase) {
                 Debug.Log((firstTouchPos - touch.position).magnitude);
                 if ((firstTouchPos - touch.position).magnitude > 200f) {
-
-                    DragToStartRotateEvent.Raise((int)(touch.position.y-firstTouchPos.y));
+                    //x position difference determines CW or CCW
+                    DragToStartRotateEvent.Raise((int)(firstTouchPos.x - touch.position.x));
 
                 } else {
-                    
+
                     Vector3 TouchWorldPos = Camera.main.ScreenToWorldPoint(firstTouchPos);
                     TouchWorldPos.z = 0;
                     Vector3 Direction = (TouchWorldPos - Camera.main.transform.position).normalized;
@@ -36,40 +36,21 @@ public class InputScript : MonoBehaviour {
                             hex.HexClicked();
                         }
                     }
-                   
+
                 }
             } else if (TouchPhase.Began == touch.phase) {
                 firstTouchPos = touch.position;
                 return;
             }
-
-
-
-            //if (TouchPhase.Moved == touch.phase) {
-            //    Debug.Log("Touch moved :"+ touch.deltaPosition.magnitude / touch.deltaTime);
-            //    if (touch.deltaPosition.magnitude/touch.deltaTime > 0.1f) {
-            //        DragToStartRotateEvent.Raise(new Void());
-            //        StartCoroutine(InternalInputWait());
-            //    }
-
-
-            //}
-
-
-
-
         }
-
-
-
 
     }
 #endif
 
 #if UNITY_EDITOR
-    // Update is called once per frame
-    void FixedUpdate1() {
-        if (Input.GetMouseButton(1) && !InternalLock) {
+    // These are only for testing with mouse in the editor
+    void FixedUpdate() {
+        if (Input.GetMouseButton(1) && !(LockInput || InternalLock)) {
 
             DragToStartRotateEvent.Raise(100);
             return;
